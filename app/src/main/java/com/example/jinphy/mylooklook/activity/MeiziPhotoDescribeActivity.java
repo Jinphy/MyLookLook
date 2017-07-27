@@ -19,7 +19,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.example.jinphy.mylooklook.R;
-import com.example.jinphy.mylooklook.adapter.MeiziAdapter;
+import com.example.jinphy.mylooklook.adapter.GirlAdapter;
+import com.example.jinphy.mylooklook.adapter.listener.TransitionListenerAdapter;
 import com.example.jinphy.mylooklook.util.AnimUtils;
 import com.example.jinphy.mylooklook.util.Help;
 import com.wingsofts.dragphotoview.DragPhotoView;
@@ -63,7 +64,7 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
     private float mTranslationX;
     private float mTranslationY;
 
-    private Transition.TransitionListener mListener = new Transition.TransitionListener() {
+    private Transition.TransitionListener mListener = new TransitionListenerAdapter() {
         @Override
         public void onTransitionStart(Transition transition) {
 //                 mRelativeLayout.animate()
@@ -71,26 +72,6 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
 //                .setDuration(1000L)
 //                .setInterpolator(new AccelerateInterpolator())
 //                .start();
-        }
-
-        @Override
-        public void onTransitionEnd(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionCancel(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionPause(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionResume(Transition transition) {
-
         }
     };
 
@@ -101,13 +82,11 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
         ButterKnife.bind(this);
 
         mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-
         mToolbar.setNavigationOnClickListener(view -> finishWithAnimation());
         mToolbar.setAlpha(0.3f);
 
         parseIntent(getIntent());
-
-        mDragPhotoView.setImageBitmap(MeiziAdapter.getSelectedBitmap());
+        mDragPhotoView.setImageBitmap(GirlAdapter.getSelectedBitmap());
         initialPhotoAttacher();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -117,6 +96,7 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
         }
     }
 
+    // 解析传递过来的Intent
     private void parseIntent(Intent intent) {
         mImageUrl = intent.getStringExtra(URL);
         mOriginLeft = intent.getIntExtra(LEFT, 0);
@@ -129,23 +109,33 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
     }
 
 
+    /**
+     * 启动当前的活动的函数
+     *
+     * @param activity 启动端的activity
+     * @param imageView 启动端界面中的imageView
+     * @param imageLeft imageView的左边坐标
+     * @param imageTop imageView的上边坐标
+     * @param imageWidth imageView的宽度
+     * @param imageHeight imageView的高度
+     * */
     public static void startActivity(
-            Activity activity,
-            ImageView imageView,String url,
+            Activity activity, ImageView imageView,
             int imageLeft,int imageTop,
             int imageWidth,int imageHeight) {
+
         Intent intent = new Intent(activity, MeiziPhotoDescribeActivity.class);
-        intent.putExtra(URL,url)
-                .putExtra(LEFT,imageLeft)
+        intent.putExtra(LEFT,imageLeft)
                 .putExtra(TOP,imageTop)
                 .putExtra(WIDTH,imageWidth)
                 .putExtra(HEIGHT,imageHeight);
-        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP){
 
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP){
             final Pair<View, String>[] pairs = Help.createSafeTransitionParticipants(
                     activity, false,new Pair<>(imageView, activity.getString(R.string.meizi)));
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, pairs);
             activity.startActivity(intent, options.toBundle());
+
         }else {
             activity.startActivity(intent);
         }
@@ -153,6 +143,7 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
 
 
 
+    // 监听器的回调函数
     private void onGlobalLayout() {
 
         int[] location = new int[2];
@@ -196,19 +187,6 @@ public class MeiziPhotoDescribeActivity extends BaseActivity {
                 .addOnGlobalLayoutListener(this::onGlobalLayout);
 
         mDragPhotoView.setOnViewTapListener((view, x, y) -> hideOrShowToolbar());
-
-//        mDragPhotoView.setOnLongClickListener(view -> {
-//            new AlertDialog.Builder(MeiziPhotoDescribeActivity.this)
-//                    .setMessage(getString(R.string.save_meizi))
-//                    .setNegativeButton(
-//                            android.R.string.cancel, (anInterface, i) -> anInterface.dismiss())
-//                    .setPositiveButton(android.R.string.ok, (anInterface, i) -> {
-//                        anInterface.dismiss();
-//                        saveImage();
-//                    }).show();
-//
-//            return true;
-//        });
 
     }
 

@@ -19,9 +19,13 @@ package com.example.jinphy.mylooklook.util;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.ColorMatrixColorFilter;
+import android.support.annotation.FloatRange;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.transition.Transition;
 import android.util.ArrayMap;
@@ -29,6 +33,7 @@ import android.util.Property;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
+import android.widget.ImageView;
 
 import java.util.ArrayList;
 
@@ -293,34 +298,6 @@ public class AnimUtils {
         }
     }
 
-    public static class TransitionListenerAdapter implements Transition.TransitionListener {
-
-        @Override
-        public void onTransitionStart(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionEnd(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionCancel(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionPause(Transition transition) {
-
-        }
-
-        @Override
-        public void onTransitionResume(Transition transition) {
-
-        }
-    }
-
     public static class Builder{
         private View view;
         private float tranXFrom;
@@ -332,6 +309,11 @@ public class AnimUtils {
         private float scaleXTo;
         private float scaleYFrom;
         private float scaleYTo;
+
+        // 视图的饱和度渐变
+        private float saturationFrom;// 饱和度起始值
+        private float saturationTo; // 饱和度终止值
+
         private long duration = 300L;
         private Interpolator interpolator;
         private Animator.AnimatorListener listener;
@@ -340,6 +322,7 @@ public class AnimUtils {
         private boolean tranY = false;
         private boolean scaleX = false;
         private boolean scaleY = false;
+        private boolean saturation = false;
 
         public Builder(@NonNull View view) {
             this.view = view;
@@ -359,6 +342,7 @@ public class AnimUtils {
             tranY = true;
             return this;
         }
+
         public Builder setScaleX(float from,float to) {
             scaleXFrom = from;
             scaleXTo = to;
@@ -373,21 +357,50 @@ public class AnimUtils {
             return this;
         }
 
-        public Builder setDuration(long duration) {
+        /**
+         * 设置饱和度的渐变动画，饱和度为0是图像是灰色的，饱和度为1时是真实的颜色
+         *
+         * @param from 饱和度初值
+         * @param to 饱和度结束值
+         * */
+        public Builder setSaturation(
+                @FloatRange(from = 0f,to = 1f) float from,
+                @FloatRange(from = 0f,to = 1f)  float to) {
+            saturationFrom  =from;
+            saturationTo = to;
+            saturation = true;
+            return this;
+        }
+
+
+        public Builder setDuration(@IntRange(from = 0) long duration) {
             this.duration = duration;
             return this;
         }
 
-        public Builder setInterpolator(Interpolator interpolator){
+        public Builder setInterpolator(@NonNull Interpolator interpolator){
             this.interpolator = interpolator;
             return this;
         }
 
-        public Builder setListener(Animator.AnimatorListener listener) {
+        public Builder setListener(@NonNull Animator.AnimatorListener listener) {
             this.listener = listener;
             return this;
         }
+
+        /**
+         * 创建并启动动画
+         *
+         * */
         public void animate() {
+            build().start();
+        }
+
+        /**
+         * 创建动画
+         *
+         * */
+        public Animator build(){
 
             AnimatorSet set = new AnimatorSet();
             set.setDuration(duration);
@@ -416,7 +429,38 @@ public class AnimUtils {
                 animator.addUpdateListener(v -> view.setScaleY((float) v.getAnimatedValue()));
                 builder = builder==null? set.play(animator):builder.with(animator);
             }
-            set.start();
+            if (saturation) {
+                try {
+                    ImageView imageView = ((ImageView) view);
+
+                    final ObservableColorMatrix cm = new ObservableColorMatrix();
+                    animator = ObjectAnimator.ofFloat(cm, ObservableColorMatrix.SATURATION,
+                            saturationFrom, saturationTo);
+                    animator.addUpdateListener(v -> imageView.setColorFilter(new
+                            ColorMatrixColorFilter(cm)));
+
+                    animator.addListener(new AnimatorListenerAdapter() {
+
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+                            imageView.setHasTransientState(true);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            imageView.clearColorFilter();
+                            imageView.setHasTransientState(false);
+                        }
+                    });
+
+                    builder = builder==null? set.play(animator):builder.with(animator);
+
+                } catch (ClassCastException e) {
+                    e.printStackTrace();
+                }
+            }
+            return set;
         }
     }
 

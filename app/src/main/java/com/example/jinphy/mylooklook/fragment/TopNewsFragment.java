@@ -102,7 +102,7 @@ public class TopNewsFragment extends BaseFragment implements ITopNewsFragment {
     }
 
     private void loadMoreDate() {
-        mTopNewsAdapter.loadingStart();
+        mTopNewsAdapter.onStartLoading();
         currentIndex += 20;
         mTopNewsPrensenter.getNewsList(currentIndex);
     }

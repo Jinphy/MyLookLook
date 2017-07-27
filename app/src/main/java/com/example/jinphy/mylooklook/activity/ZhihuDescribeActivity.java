@@ -34,6 +34,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.jinphy.mylooklook.R;
+import com.example.jinphy.mylooklook.adapter.listener.TransitionListenerAdapter;
 import com.example.jinphy.mylooklook.bean.zhihu.ZhihuStory;
 import com.example.jinphy.mylooklook.config.Config;
 import com.example.jinphy.mylooklook.presenter.IZhihuStoryPresenter;
@@ -125,7 +126,7 @@ public class ZhihuDescribeActivity extends SwipeBackActivity implements IZhihuSt
 
     private void initlistenr() {
         zhihuReturnHomeListener =
-                new AnimUtils.TransitionListenerAdapter() {
+                new TransitionListenerAdapter() {
                     @Override
                     public void onTransitionStart(Transition transition) {
                         super.onTransitionStart(transition);

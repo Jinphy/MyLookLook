@@ -16,7 +16,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -71,12 +70,9 @@ public class MainActivity extends BaseActivity implements IMain {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: 0");
         setContentView(R.layout.main_layout);
-        Log.d(TAG, "onCreate: 1");
         // 依赖注入
         ButterKnife.bind(this);
-        Log.d(TAG, "onCreate: 2");
 
         setSupportActionBar(toolbar);
         animateTitle();
@@ -91,11 +87,9 @@ public class MainActivity extends BaseActivity implements IMain {
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 
-        Log.d(TAG, "onCreate: 3");
         // 初始化设置fragment
         initFragment(savedInstanceState);
 
-        Log.d(TAG, "onCreate: 4");
 
         navView.setNavigationItemSelectedListener(this::onItemSelected);
 
@@ -275,7 +269,6 @@ public class MainActivity extends BaseActivity implements IMain {
         // this is gross but toolbar doesn't expose it's children to animate them :(
         View t = toolbar.getChildAt(0);
         if (t != null && t instanceof TextView) {
-            Log.d(TAG, "animateToolbar: textview");
             TextView title = (TextView) t;
 
             // fade in and space out the title.  Animating the letterSpacing performs horribly so
@@ -312,9 +305,9 @@ public class MainActivity extends BaseActivity implements IMain {
     //    when recycle view scroll bottom,need loading more date and show the more view.
     public interface LoadingMore {
 
-        void loadingStart();
+        void onStartLoading();
 
-        void loadingfinish();
+        void onFinishLoading();
     }
 
     // toolbar 中的menu item的点击事件

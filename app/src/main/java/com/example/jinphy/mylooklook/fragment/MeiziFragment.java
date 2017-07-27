@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.example.jinphy.mylooklook.R;
-import com.example.jinphy.mylooklook.adapter.MeiziAdapter;
+import com.example.jinphy.mylooklook.adapter.GirlAdapter;
 import com.example.jinphy.mylooklook.bean.meizi.Gank;
 import com.example.jinphy.mylooklook.bean.meizi.Meizi;
 import com.example.jinphy.mylooklook.presenter.implPresenter.MeiziPresenterImpl;
@@ -35,7 +35,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
      ProgressBar mPrograss;
 
     private WrapContentLinearLayoutManager linearLayoutManager;
-    private MeiziAdapter meiziAdapter;
+    private GirlAdapter meiziAdapter;
     private RecyclerView.OnScrollListener loadmoreListener;
     private MeiziPresenterImpl mMeiziPresenter;
 
@@ -56,7 +56,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
 
         mMeiziPresenter = new MeiziPresenterImpl(getContext(), this);
 
-        meiziAdapter = new MeiziAdapter(getContext());
+        meiziAdapter = new GirlAdapter(getContext());
         linearLayoutManager = new WrapContentLinearLayoutManager(getContext());
 
         loadmoreListener = new RecyclerView.OnScrollListener() {
@@ -115,7 +115,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
     }
 
     private void loadMoreDate() {
-        meiziAdapter.loadingStart();
+        meiziAdapter.onStartLoading();
         mMeiziPresenter.getMeiziData(index);
     }
 
@@ -127,7 +127,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
 
     @Override
     public void updateMeiziData(ArrayList<Meizi> list) {
-        meiziAdapter.loadingfinish();
+        meiziAdapter.onFinishLoading();
         isLoading = false;
         meiziAdapter.addItems(list);
         mMeiziPresenter.getVedioData(index);
@@ -135,7 +135,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
 
     @Override
     public void updateVedioData(ArrayList<Gank> list) {
-        meiziAdapter.addVedioDes(list);
+        meiziAdapter.addVideoData(list);
     }
 
     @Override

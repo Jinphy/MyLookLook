@@ -28,6 +28,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.jinphy.mylooklook.R;
+import com.example.jinphy.mylooklook.adapter.listener.TransitionListenerAdapter;
 import com.example.jinphy.mylooklook.bean.news.NewsDetailBean;
 import com.example.jinphy.mylooklook.presenter.implPresenter.TopNewsDesPresenterImpl;
 import com.example.jinphy.mylooklook.presenter.implView.ITopNewsDesFragment;
@@ -227,7 +228,7 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
             });
         }
         mReturnHomeListener =
-                new AnimUtils.TransitionListenerAdapter() {
+                new TransitionListenerAdapter() {
                     @Override
                     public void onTransitionStart(Transition transition) {
                         super.onTransitionStart(transition);
@@ -247,7 +248,7 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
                     }
                 };
         mEnterTrasitionListener =
-                new AnimUtils.TransitionListenerAdapter() {
+                new TransitionListenerAdapter() {
                     @Override
                     public void onTransitionEnd(Transition transition) {
                         super.onTransitionEnd(transition);

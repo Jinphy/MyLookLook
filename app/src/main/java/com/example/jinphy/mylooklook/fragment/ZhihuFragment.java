@@ -136,7 +136,7 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
     }
 
     private void loadMoreDate() {
-        zhihuAdapter.loadingStart();
+        zhihuAdapter.onStartLoading();
         zhihuPresenter.getTheDaily(currentLoadDate);
     }
 
@@ -196,7 +196,7 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
     public void updateList(ZhihuDaily zhihuDaily) {
         if (loading) {
             loading = false;
-            zhihuAdapter.loadingfinish();
+            zhihuAdapter.onFinishLoading();
         }
         currentLoadDate = zhihuDaily.getDate();
         zhihuAdapter.addItems(zhihuDaily.getStories());

@@ -225,14 +225,14 @@ public class TopNewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     @Override
-    public void loadingStart() {
+    public void onStartLoading() {
         if (loadingMore) return;
         loadingMore = true;
         notifyItemInserted(getLoadingMoreItemPosition());
     }
 
     @Override
-    public void loadingfinish() {
+    public void onFinishLoading() {
         if (!loadingMore) return;
         final int loadingPos = getLoadingMoreItemPosition();
         loadingMore = false;
