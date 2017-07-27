@@ -4,15 +4,20 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.transition.ChangeBounds;
@@ -27,6 +32,7 @@ import android.view.animation.LinearInterpolator;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -42,6 +48,7 @@ import com.example.jinphy.mylooklook.presenter.implPresenter.ZhihuStoryPresenter
 import com.example.jinphy.mylooklook.presenter.implView.IZhihuStory;
 import com.example.jinphy.mylooklook.util.AnimUtils;
 import com.example.jinphy.mylooklook.util.ColorUtils;
+import com.example.jinphy.mylooklook.util.Help;
 import com.example.jinphy.mylooklook.util.ScreenUtils;
 import com.example.jinphy.mylooklook.util.ViewUtils;
 import com.example.jinphy.mylooklook.util.WebUtil;
@@ -64,6 +71,10 @@ import static com.example.jinphy.mylooklook.util.GlideUtils.getBitmap;
  */
 public class ZhihuDescribeActivity extends SwipeBackActivity implements IZhihuStory {
     private static final float SCRIM_ADJUSTMENT = 0.075f;
+
+    public static final String ID = "id";
+    public static final String TITLE = "title";
+
 
     @BindView(R.id.shot)
     ParallaxScrimageView mShot;
@@ -464,6 +475,29 @@ public class ZhihuDescribeActivity extends SwipeBackActivity implements IZhihuSt
                 .setInterpolator(interp)
                 .setListener(null)
                 .start();
+    }
+
+    public static void startActivity(
+            Activity activity,
+            ImageView imageView,CardView cardView,
+            String id, String title) {
+        Intent intent = new Intent(activity,ZhihuDescribeActivity.class);
+        intent.putExtra(ID,id)
+                .putExtra(TITLE,title);
+
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP){
+            final Pair<View, String>[] pairs = Help.createSafeTransitionParticipants(
+                    activity,
+                    false,
+                    new Pair<>(imageView, activity.getString(R.string.transition_shot)),
+                    new Pair<>(cardView, activity.getString(R.string.transition_shot_background)));
+            ActivityOptionsCompat options =
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(activity, pairs);
+            activity.startActivity(intent, options.toBundle());
+        }else{
+            activity.startActivity(intent);
+        }
+
     }
 
 }

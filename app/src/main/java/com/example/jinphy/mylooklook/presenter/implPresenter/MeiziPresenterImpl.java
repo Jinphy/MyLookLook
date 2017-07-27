@@ -37,28 +37,21 @@ public class MeiziPresenterImpl extends BasePresenterImpl implements IMeiziPrese
         Subscription subscription = ApiManager.getInstence().getGankService().getMeizhiData(t)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<MeiziData>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        mMeiziFragment.hidProgressDialog();
-                        mMeiziFragment.showError(e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(MeiziData meiziData) {
-                        mMeiziFragment.hidProgressDialog();
-                        mCacheUtil.put(Config.ZHIHU, gson.toJson(meiziData));
-                        mMeiziFragment.updateMeiziData(meiziData.getResults());
-                    }
-                });
+                .subscribe(this::onNext1,this::onError1);
         addSubscription(subscription);
     }
 
+
+    private void onNext1(MeiziData meiziData){
+        mMeiziFragment.hidProgressDialog();
+        mCacheUtil.put(Config.ZHIHU, gson.toJson(meiziData));
+        mMeiziFragment.updateMeiziData(meiziData.getResults());
+    }
+
+    private void onError1(Throwable e) {
+        mMeiziFragment.hidProgressDialog();
+        mMeiziFragment.showError(e.getMessage());
+    }
 
 
     @Override
@@ -66,29 +59,22 @@ public class MeiziPresenterImpl extends BasePresenterImpl implements IMeiziPrese
         Subscription subscription = ApiManager.getInstence().getGankService().getVedioData(t)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<VedioData>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        mMeiziFragment.hidProgressDialog();
-                        mMeiziFragment.showError(e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(VedioData vedioData) {
-                        mMeiziFragment.hidProgressDialog();
-                        mMeiziFragment.updateVedioData(vedioData.getResults());
-                    }
-                });
+                .subscribe(this::onNext2,this::onError2);
         addSubscription(subscription);
     }
 
 
 
+    public void onNext2(VedioData vedioData) {
+        mMeiziFragment.hidProgressDialog();
+        mMeiziFragment.updateVedioData(vedioData.getResults());
+    }
+
+
+    public void onError2(Throwable e) {
+        e.printStackTrace();
+        mMeiziFragment.hidProgressDialog();
+        mMeiziFragment.showError(e.getMessage());
+    }
 
 }

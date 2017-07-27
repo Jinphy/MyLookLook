@@ -11,6 +11,9 @@ import com.example.jinphy.mylooklook.presenter.implView.IZhihuFragment;
 import com.example.jinphy.mylooklook.util.CacheUtil;
 import com.google.gson.Gson;
 
+import org.json.JSONObject;
+
+import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -36,81 +39,57 @@ public class ZhihuPresenterImpl extends BasePresenterImpl implements IZhihuPrese
     public void getLastZhihuNews() {
         mZhihuFragment.showProgressDialog();
         Subscription subscription = ApiManager.getInstence().getZhihuApiService().getLastDaily()
-                .map(new Func1<ZhihuDaily, ZhihuDaily>() {
-                    @Override
-                    public ZhihuDaily call(ZhihuDaily zhihuDaily) {
-                        String date = zhihuDaily.getDate();
-                        for (ZhihuDailyItem zhihuDailyItem : zhihuDaily.getStories()) {
-                            zhihuDailyItem.setDate(date);
-                        }
-                        return zhihuDaily;
-                    }
-                })
+                .map(this::dacerote)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ZhihuDaily>() {
-                    @Override
-                    public void onCompleted() {
+                .subscribe(this::onNextNews,this::onError);
 
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        mZhihuFragment.hidProgressDialog();
-                        mZhihuFragment.showError(e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(ZhihuDaily zhihuDaily) {
-                        mZhihuFragment.hidProgressDialog();
-                        mCacheUtil.put(Config.ZHIHU, gson.toJson(zhihuDaily));
-                        mZhihuFragment.updateList(zhihuDaily);
-                    }
-                });
         addSubscription(subscription);
+    }
+
+
+    private ZhihuDaily dacerote(ZhihuDaily daily) {
+        String date = daily.getDate();
+        for (ZhihuDailyItem item : daily.getStories()) {
+            item.setDate(date);
+        }
+        return daily;
+    }
+
+
+    private void onError(Throwable e) {
+        mZhihuFragment.hidProgressDialog();
+        mZhihuFragment.showError(e.getMessage());
+    }
+
+    private void onNextNews(ZhihuDaily daily) {
+        mZhihuFragment.hidProgressDialog();
+        mCacheUtil.put(Config.ZHIHU, gson.toJson(daily));
+        mZhihuFragment.updateList(daily);
+    }
+
+    private void onNextDaily(ZhihuDaily daily) {
+        mZhihuFragment.hidProgressDialog();
+        mZhihuFragment.updateList(daily);
+
     }
 
     @Override
     public void getTheDaily(String date) {
         Subscription subscription = ApiManager.getInstence().getZhihuApiService().getTheDaily(date)
-                .map(new Func1<ZhihuDaily, ZhihuDaily>() {
-                    @Override
-                    public ZhihuDaily call(ZhihuDaily zhihuDaily) {
-                        String date = zhihuDaily.getDate();
-                        for (ZhihuDailyItem zhihuDailyItem : zhihuDaily.getStories()) {
-                            zhihuDailyItem.setDate(date);
-                        }
-                        return zhihuDaily;
-                    }
-                })
+                .map(this::dacerote)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ZhihuDaily>() {
-                    @Override
-                    public void onCompleted() {
+                .subscribe(this::onNextDaily,this::onError);
 
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        mZhihuFragment.hidProgressDialog();
-                        mZhihuFragment.showError(e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(ZhihuDaily zhihuDaily) {
-                        mZhihuFragment.hidProgressDialog();
-                        mZhihuFragment.updateList(zhihuDaily);
-                    }
-                });
         addSubscription(subscription);
     }
 
     @Override
     public void getLastFromCache() {
-        if (mCacheUtil.getAsJSONObject(Config.ZHIHU) != null) {
-            ZhihuDaily zhihuDaily = gson.fromJson(mCacheUtil.getAsJSONObject(Config.ZHIHU).toString(), ZhihuDaily.class);
+        JSONObject jsonObject = mCacheUtil.getAsJSONObject(Config.ZHIHU);
+        if (jsonObject != null) {
+            ZhihuDaily zhihuDaily = gson.fromJson(jsonObject.toString(), ZhihuDaily.class);
             mZhihuFragment.updateList(zhihuDaily);
         }
     }

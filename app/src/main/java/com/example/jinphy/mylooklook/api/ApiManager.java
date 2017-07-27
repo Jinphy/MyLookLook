@@ -2,6 +2,7 @@ package com.example.jinphy.mylooklook.api;
 
 
 import com.example.jinphy.mylooklook.MyApplication;
+import com.example.jinphy.mylooklook.util.FileUtils;
 import com.example.jinphy.mylooklook.util.NetWorkUtil;
 
 import java.io.File;
@@ -20,54 +21,53 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class ApiManager {
 
-    private static final Interceptor REWRITE_CACHE_CONTROL_INTERCEPTOR = new Interceptor() {
-        @Override
-        public Response intercept(Chain chain) throws IOException {
-            Response originalResponse = chain.proceed(chain.request());
-            if (NetWorkUtil.isNetWorkAvailable(MyApplication.getContext())) {
-                int maxAge = 60; // 在线缓存在1分钟内可读取
-                return originalResponse.newBuilder()
-                        .removeHeader("Pragma")
-                        .removeHeader("Cache-Control")
-                        .header("Cache-Control", "public, max-age=" + maxAge)
-                        .build();
-            } else {
-                int maxStale = 60 * 60 * 24 * 28; // 离线时缓存保存4周
-                return originalResponse.newBuilder()
-                        .removeHeader("Pragma")
-                        .removeHeader("Cache-Control")
-                        .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
-                        .build();
-            }
-        }
-    };
-    private static ApiManager apiManager;
-    private static File httpCacheDirectory = new File(MyApplication.getContext().getCacheDir(), "zhihuCache");
+    private static ApiManager apiManager = new ApiManager();
+
+    private static final Interceptor REWRITE_CACHE_CONTROL_INTERCEPTOR = ApiManager::intercept;
+    private static File httpCacheDirectory = FileUtils.getCacheDir(MyApplication.getContext(),"zhihuCache");
     private static int cacheSize = 10 * 1024 * 1024; // 10 MiB
     private static Cache cache = new Cache(httpCacheDirectory, cacheSize);
-    private static OkHttpClient client = new OkHttpClient.Builder()
-            .addNetworkInterceptor(REWRITE_CACHE_CONTROL_INTERCEPTOR)
-            .addInterceptor(REWRITE_CACHE_CONTROL_INTERCEPTOR)
-            .cache(cache)
-            .build();
-    private ZhihuApi zhihuApi;
-    private TopNews topNews;
-    private Object zhihuMonitor = new Object();
+    private static OkHttpClient client = getClient();
+
+    private Object lock = new Object();
 
     public static ApiManager getInstence() {
-        if (apiManager == null) {
-            synchronized (ApiManager.class) {
-                if (apiManager == null) {
-                    apiManager = new ApiManager();
-                }
-            }
-        }
         return apiManager;
     }
 
+    // 网络请求拦截回调函数
+    private static Response intercept(Interceptor.Chain chain) throws IOException {
+        Response originalResponse = chain.proceed(chain.request());
+        if (NetWorkUtil.isNetWorkAvailable(MyApplication.getContext())) {
+            int maxAge = 60; // 在线缓存在1分钟内可读取
+            return originalResponse.newBuilder()
+                    .removeHeader("Pragma")
+                    .removeHeader("Cache-Control")
+                    .header("Cache-Control", "public, max-age=" + maxAge)
+                    .build();
+        } else {
+            int maxStale = 60 * 60 * 24 * 28; // 离线时缓存保存4周
+            return originalResponse.newBuilder()
+                    .removeHeader("Pragma")
+                    .removeHeader("Cache-Control")
+                    .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
+                    .build();
+        }
+    }
+
+    private static OkHttpClient getClient() {
+        return new OkHttpClient.Builder()
+                .addNetworkInterceptor(REWRITE_CACHE_CONTROL_INTERCEPTOR)
+                .addInterceptor(REWRITE_CACHE_CONTROL_INTERCEPTOR)
+                .cache(cache)
+                .build();
+    }
+
+
+    private ZhihuApi zhihuApi;
     public ZhihuApi getZhihuApiService() {
         if (zhihuApi == null) {
-            synchronized (zhihuMonitor) {
+            synchronized (lock) {
                 if (zhihuApi == null) {
                     zhihuApi = new Retrofit.Builder()
                             .baseUrl("http://news-at.zhihu.com")
@@ -82,9 +82,10 @@ public class ApiManager {
         return zhihuApi;
     }
 
+    private TopNews topNews;
     public TopNews getTopNewsService() {
         if (topNews == null) {
-            synchronized (zhihuMonitor) {
+            synchronized (lock) {
                 if (topNews == null) {
                     topNews = new Retrofit.Builder()
                             .baseUrl("http://c.m.163.com")
@@ -103,7 +104,7 @@ public class ApiManager {
     private GankApi ganK;
     public GankApi getGankService(){
         if (ganK==null){
-            synchronized (zhihuMonitor){
+            synchronized (lock){
                 if (ganK==null){
                     ganK=new Retrofit.Builder()
                             .baseUrl("http://gank.io")

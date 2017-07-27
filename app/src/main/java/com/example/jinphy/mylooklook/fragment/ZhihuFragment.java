@@ -57,12 +57,14 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable
+            Bundle savedInstanceState) {
 
         setRetainInstance(true);
         view = inflater.inflate(R.layout.zhihu_fragment_layout, container, false);
-        checkConnectivity(view);
         ButterKnife.bind(this, view);
+        checkConnectivity(view);
+
         return view;
 
     }
@@ -81,7 +83,8 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
         super.onPause();
         if (monitoringConnectivity) {
             final ConnectivityManager connectivityManager
-                    = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                    = (ConnectivityManager) getActivity().getSystemService(Context
+                    .CONNECTIVITY_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 connectivityManager.unregisterNetworkCallback(connectivityCallback);
             }
@@ -113,12 +116,13 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
         }
         recycle.setLayoutManager(mLinearLayoutManager);
         recycle.setHasFixedSize(true);
-        recycle.addItemDecoration(new GridItemDividerDecoration(getContext(), R.dimen.divider_height, R.color.divider));
+        recycle.addItemDecoration(new GridItemDividerDecoration(getContext(), R.dimen
+                .divider_height, R.color.divider));
         // TODO: 16/8/13 add  animation
         recycle.setItemAnimator(new DefaultItemAnimator());
         recycle.setAdapter(zhihuAdapter);
         recycle.addOnScrollListener(loadingMoreListener);
-//      recycle.addOnScrollListener(tooldimissListener);
+        //      recycle.addOnScrollListener(tooldimissListener);
         if (connected) {
             loadDate();
         }
@@ -144,16 +148,11 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
 
         loadingMoreListener = new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                if (dy > 0) //向下滚动
-                {
+                if (dy > 0) {
+                    // 向下滚动
                     int visibleItemCount = mLinearLayoutManager.getChildCount();
                     int totalItemCount = mLinearLayoutManager.getItemCount();
                     int pastVisiblesItems = mLinearLayoutManager.findFirstVisibleItemPosition();
@@ -172,12 +171,9 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
                 @Override
                 public void onAvailable(Network network) {
                     connected = true;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            noConnectionText.setVisibility(View.GONE);
-                            loadDate();
-                        }
+                    getActivity().runOnUiThread(() -> {
+                        noConnectionText.setVisibility(View.GONE);
+                        loadDate();
                     });
                 }
 
@@ -200,7 +196,7 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
         }
         currentLoadDate = zhihuDaily.getDate();
         zhihuAdapter.addItems(zhihuDaily.getStories());
-//        if the new data is not full of the screen, need load more data
+        //        if the new data is not full of the screen, need load more data
         if (!recycle.canScrollVertically(View.SCROLL_INDICATOR_BOTTOM)) {
             loadMoreDate();
         }
@@ -224,16 +220,15 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
     public void showError(String error) {
 
         if (recycle != null) {
-            Snackbar.make(recycle, getString(R.string.snack_infor), Snackbar.LENGTH_SHORT).setAction("重试", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (currentLoadDate.equals("0")) {
-                        zhihuPresenter.getLastZhihuNews();
-                    } else {
-                        zhihuPresenter.getTheDaily(currentLoadDate);
-                    }
-                }
-            }).show();
+            Snackbar.make(recycle, getString(R.string.snack_infor), Snackbar.LENGTH_SHORT)
+                    .setAction("重试", v -> {
+                        if (currentLoadDate.equals("0")) {
+                            zhihuPresenter.getLastZhihuNews();
+                        } else {
+                            zhihuPresenter.getTheDaily(currentLoadDate);
+                        }
+                    })
+                    .show();
 
         }
     }
@@ -241,19 +236,20 @@ public class ZhihuFragment extends BaseFragment implements IZhihuFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-//        ButterKnife.reset(this);
+        //        ButterKnife.reset(this);
     }
 
     private void checkConnectivity(View view) {
         final ConnectivityManager connectivityManager
-                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                = (ConnectivityManager) getActivity().getSystemService(Context
+                .CONNECTIVITY_SERVICE);
         final NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         connected = activeNetworkInfo != null && activeNetworkInfo.isConnected();
-        if (!connected && progress != null) {//不判断容易抛出空指针异常
+        if (!connected) {
             progress.setVisibility(View.INVISIBLE);
             if (noConnectionText == null) {
 
-                ViewStub stub_text = (ViewStub) view.findViewById(R.id.stub_no_connection_text);
+                ViewStub stub_text = view.findViewById(R.id.stub_no_connection_text);
                 noConnectionText = (TextView) stub_text.inflate();
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

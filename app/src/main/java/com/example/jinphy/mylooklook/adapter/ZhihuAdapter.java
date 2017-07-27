@@ -4,15 +4,19 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
+import android.os.Handler;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,8 +29,10 @@ import com.bumptech.glide.request.target.Target;
 import com.example.jinphy.mylooklook.MainActivity;
 import com.example.jinphy.mylooklook.R;
 import com.example.jinphy.mylooklook.activity.ZhihuDescribeActivity;
+import com.example.jinphy.mylooklook.adapter.listener.GlideRequestListenerAdapter;
 import com.example.jinphy.mylooklook.bean.zhihu.ZhihuDailyItem;
 import com.example.jinphy.mylooklook.config.Config;
+import com.example.jinphy.mylooklook.util.AnimUtils;
 import com.example.jinphy.mylooklook.util.DBUtils;
 import com.example.jinphy.mylooklook.util.DribbbleTarget;
 import com.example.jinphy.mylooklook.util.ObservableColorMatrix;
@@ -47,6 +53,9 @@ public class ZhihuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private ArrayList<ZhihuDailyItem> zhihuDailyItems = new ArrayList<>();
     private Context mContext;
 
+
+
+
     public ZhihuAdapter(Context context) {
 
         this.mContext = context;
@@ -64,9 +73,9 @@ public class ZhihuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             case TYPE_LOADING_MORE:
                 return new LoadingMoreHolder(LayoutInflater.from(mContext).inflate(R.layout.infinite_loading, parent, false));
-
+            default:
+                return null;
         }
-        return null;
 
     }
 
@@ -93,88 +102,66 @@ public class ZhihuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private void bindViewHolderNormal(final ZhihuViewHolder holder, final int position) {
 
-        final ZhihuDailyItem zhihuDailyItem = zhihuDailyItems.get(holder.getAdapterPosition());
+        final ZhihuDailyItem item = zhihuDailyItems.get(position);
 
-        if (DBUtils.getDB(mContext).isRead(Config.ZHIHU, zhihuDailyItem.getId(), 1))
+        // 判断该条新闻是否已经阅读过，从而标记不同的颜色
+        if (DBUtils.getDB(mContext).isRead(Config.ZHIHU, item.getId(), 1))
             holder.textView.setTextColor(Color.GRAY);
         else
             holder.textView.setTextColor(Color.BLACK);
 
-        holder.imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startDescribeActivity(holder, zhihuDailyItem);
-
-            }
-        });
-        holder.textView.setText(zhihuDailyItem.getTitle());
-        holder.linearLayout.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        startDescribeActivity(holder, zhihuDailyItem);
-                    }
-                });
-
+        holder.textView.setText(item.getTitle());
+        holder.cardView.setOnClickListener(view -> onItemClick(item,holder));
 
         Glide.with(mContext)
                 .load(zhihuDailyItems.get(position).getImages()[0])
-                .listener(new RequestListener<String, GlideDrawable>() {
+                .listener(new GlideRequestListenerAdapter<String, GlideDrawable>() {
+                    private int saturationDuration = 1500;
+                    private float saturationTo = 1f;
+                    private float saturationFrom = 0f;
                     @Override
-                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        if (!zhihuDailyItem.hasFadedIn) {
-                            holder.imageView.setHasTransientState(true);
-                            final ObservableColorMatrix cm = new ObservableColorMatrix();
-                            final ObjectAnimator animator = ObjectAnimator.ofFloat(cm, ObservableColorMatrix.SATURATION, 0f, 1f);
-                            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                                @Override
-                                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                                    holder.imageView.setColorFilter(new ColorMatrixColorFilter(cm));
-                                }
-                            });
-                            animator.setDuration(2000L);
-                            animator.setInterpolator(new AccelerateInterpolator());
-                            animator.addListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    super.onAnimationEnd(animation);
-                                    holder.imageView.clearColorFilter();
-                                    holder.imageView.setHasTransientState(false);
-                                    animator.start();
-                                    zhihuDailyItem.hasFadedIn = true;
-
-                                }
-                            });
+                    public boolean onResourceReady(
+                            GlideDrawable resource,
+                            String model,
+                            Target<GlideDrawable> target,
+                            boolean isFromMemoryCache, boolean isFirstResource) {
+                        if (!isFromMemoryCache) {
+                            new AnimUtils.Builder(holder.imageView)
+                                    .setSaturation(saturationFrom, saturationTo)
+                                    .setDuration(saturationDuration)
+                                    .setInterpolator(new AccelerateInterpolator())
+                                    .animate();
                         }
-
                         return false;
                     }
-                }).diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .centerCrop().override(mImageWidth, mImageHeigh)
+                })
+                .override(mImageWidth, mImageHeigh)
                 .into(new DribbbleTarget(holder.imageView, false));
-
 
     }
 
-    private void startDescribeActivity(ZhihuViewHolder holder, ZhihuDailyItem zhihuDailyItem) {
 
-        DBUtils.getDB(mContext).insertHasRead(Config.ZHIHU, zhihuDailyItem.getId(), 1);
+    private void onItemClick(ZhihuDailyItem item,ZhihuViewHolder holder){
+
+        // 更新数据库
+        DBUtils.getDB(mContext).insertHasRead(Config.ZHIHU, item.getId(), 1);
+        // 修改文字颜色
         holder.textView.setTextColor(Color.GRAY);
-        Intent intent = new Intent(mContext, ZhihuDescribeActivity.class);
-        intent.putExtra("id", zhihuDailyItem.getId());
-        intent.putExtra("title", zhihuDailyItem.getTitle());
+        // 启动活动
+        startDescribeActivity(item,holder);
+    }
 
-//                final android.support.v4.util.Pair<View, String>[] pairs = Help.createSafeTransitionParticipants
-//                        ((Activity) mContext, false,new android.support.v4.util.Pair<>(holder.imageView, mContext.getString(R.string.transition_shot)),
-//                                new android.support.v4.util.Pair<>(holder.linearLayout, mContext.getString(R.string.transition_shot_background)));
-//                        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) mContext, pairs);
-//                mContext.startActivity(intent, options.toBundle());
-        mContext.startActivity(intent);
+    private void startDescribeActivity(ZhihuDailyItem item,  ZhihuViewHolder holder) {
+
+        String id = item.getId();
+        String title = item.getTitle();
+
+        ZhihuDescribeActivity.startActivity(
+                ((Activity) mContext),
+                holder.imageView,
+                holder.cardView,
+                id,title
+        );
 
     }
 
@@ -244,14 +231,14 @@ public class ZhihuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private static class ZhihuViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
-        LinearLayout linearLayout;
+        CardView cardView;
         BadgedFourThreeImageView imageView;
 
         ZhihuViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.item_image_id);
             textView = itemView.findViewById(R.id.item_text_id);
-            linearLayout = itemView.findViewById(R.id.zhihu_item_layout);
+            cardView = (CardView) itemView;
         }
     }
 

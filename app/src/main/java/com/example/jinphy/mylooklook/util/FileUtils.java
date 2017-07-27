@@ -172,6 +172,20 @@ public class FileUtils {
         return createFile(parent, prefix, suffix, true);
     }
 
+    /**
+     *
+     * @param context 上下文
+     * @param subDir 缓存目录下的子目录
+     * @return 返回生成的缓存目录文件
+     * */
+    public static File getCacheDir(Context context ,String subDir){
+        File cache = context.getCacheDir();
+        File out = new File(cache, subDir);
+        out.mkdirs();
+        return out;
+    }
+
+
     //--------------------图片相关----------------------------------------------------
 
 

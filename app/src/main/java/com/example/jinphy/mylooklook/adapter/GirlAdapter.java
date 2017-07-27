@@ -87,7 +87,6 @@ public class GirlAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 
     private void bindViewHolderNormal(final GirlViewHolder holder, final int position) {
 
-//        final Meizi meizi = meiziItems.get(holder.getAdapterPosition());
         final Meizi meizi = meiziItems.get(position);
 
         holder.imageView.setOnClickListener(view ->
@@ -111,8 +110,6 @@ public class GirlAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
                                     .setDuration(saturationDuration)
                                     .setInterpolator(new AccelerateInterpolator())
                                     .animate();
-                            //
-
                         }
                         return false;
                     }

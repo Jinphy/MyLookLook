@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
 
     private WrapContentLinearLayoutManager linearLayoutManager;
     private GirlAdapter meiziAdapter;
-    private RecyclerView.OnScrollListener loadmoreListener;
+    private RecyclerView.OnScrollListener loadMoreListener;
     private MeiziPresenterImpl mMeiziPresenter;
 
     private boolean isLoading;
@@ -51,6 +52,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
         return view;
     }
 
+    private static final String TAG = "MeiziFragment";
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
@@ -59,22 +61,17 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
         meiziAdapter = new GirlAdapter(getContext());
         linearLayoutManager = new WrapContentLinearLayoutManager(getContext());
 
-        loadmoreListener = new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
+        loadMoreListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (dy > 0) //向下滚动
-                {
+                if (dy > 0) {
+                    //向下滚动
                     int visibleItemCount = linearLayoutManager.getChildCount();
                     int totalItemCount = linearLayoutManager.getItemCount();
-                    int pastVisiblesItems = linearLayoutManager.findFirstVisibleItemPosition();
+                    int firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-                    if (!isLoading && (visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                    if (!isLoading && (visibleItemCount + firstVisibleItem) >= totalItemCount) {
                         isLoading = true;
                         index += 1;
                         loadMoreDate();
@@ -85,20 +82,13 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
 
         mRecycleMeizi.setLayoutManager(linearLayoutManager);
         mRecycleMeizi.setAdapter(meiziAdapter);
-        mRecycleMeizi.addOnScrollListener(loadmoreListener);
+        mRecycleMeizi.addOnScrollListener(loadMoreListener);
 
-        new Once(getContext()).show("tip_guide_6", new Once.OnceCallback() {
-            @Override
-            public void onOnce() {
+        new Once(getContext()).show("tip_guide_6", () ->
                 Snackbar.make(mRecycleMeizi, getString(R.string.meizitips), Snackbar.LENGTH_INDEFINITE)
-                        .setAction(R.string.meiziaction, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                            }
-                        })
-                        .show();
-            }
-        });
+                .setAction(R.string.meiziaction, view1 -> {})
+                .show()
+        );
         mRecycleMeizi.setItemAnimator(new DefaultItemAnimator());
 
         loadDate();
@@ -127,6 +117,7 @@ public class MeiziFragment extends BaseFragment implements IMeiziFragment {
 
     @Override
     public void updateMeiziData(ArrayList<Meizi> list) {
+
         meiziAdapter.onFinishLoading();
         isLoading = false;
         meiziAdapter.addItems(list);

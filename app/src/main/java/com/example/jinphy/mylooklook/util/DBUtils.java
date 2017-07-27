@@ -45,7 +45,7 @@ public class DBUtils {
     public boolean isRead(String table, String key, int value) {
         boolean isRead = false;
         Cursor cursor = mSQLiteDatabase.query(table, null, "key=?", new String[]{key}, null, null, null);
-        if (cursor.moveToNext() && (cursor.getInt(cursor.getColumnIndex("is_read")) == value)) {
+        if (cursor!=null && cursor.moveToNext() && (cursor.getInt(cursor.getColumnIndex("is_read")) == value)) {
             isRead = true;
         }
         cursor.close();
