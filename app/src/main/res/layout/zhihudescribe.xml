@@ -34,6 +34,7 @@
         android:background="@color/nev_item"
         android:transitionGroup="false"
         android:transitionName="@string/transition_shot_background">
+
     <FrameLayout
         android:id="@+id/containe"
         android:layout_width="match_parent"

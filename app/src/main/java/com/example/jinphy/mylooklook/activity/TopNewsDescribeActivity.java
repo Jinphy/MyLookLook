@@ -78,8 +78,6 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
     int screenHeight = ScreenUtils.getScreenHeight(MyApplication.getContext());
     float density = ScreenUtils.getDensity(MyApplication.getContext());
 
-    float width = screenWidth;
-    float height = width *3 /4;
     @BindView(R.id.progress)
     ProgressBar mProgress;
     @BindView(R.id.htNewsContent)
@@ -141,6 +139,29 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
         ScreenUtils.setStatusBarColor(this,statusColor);
         mToolbar.setBackgroundColor(toolbarColor);
 
+        mNest.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int
+                    oldScrollX, int oldScrollY) {
+                int maxScroll = mToolbar.getHeight()+mShot.getHeight();
+                int transY= 0;
+                if (scrollY > maxScroll) {
+                    transY = -mToolbar.getHeight();
+                }
+                if (Math.abs(transY - mToolbar.getTranslationY()) < 5) {
+                    return;
+                }
+                AnimUtils.Builder.create()
+                        .setInt(transY)
+                        .onUpdateInt(animator -> {
+                            int trans = ((int) animator.getAnimatedValue());
+                            mToolbar.setTranslationY(trans);
+                            mShot.setTranslationY(trans);
+                        })
+                        .setInterpolator(new DecelerateInterpolator())
+                        .animate();
+            }
+        });
 
         mTopNewsDesPresenter = new TopNewsDesPresenterImpl(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

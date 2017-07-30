@@ -45,15 +45,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    style="@style/Widget.Look.HomeToolbar"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="?android:actionBarSize"
-                    android:background="#3b000000"
-                    android:elevation="1dp"
-                    android:outlineProvider="none"
-                    app:title="@string/topnews"/>
+                    android:layout_height="?android:actionBarSize"/>
 
 
                 <com.example.jinphy.mylooklook.widget.ParallaxScrimageView
@@ -146,6 +140,17 @@
             </LinearLayout>
 
         </android.support.v4.widget.NestedScrollView>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.Look.HomeToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?android:actionBarSize"
+            android:background="#3b000000"
+            android:elevation="1dp"
+            android:outlineProvider="none"
+            app:title="@string/topnews"/>
+
     </FrameLayout>
 
 </com.example.jinphy.mylooklook.widget.ElasticDragDismissFrameLayout>

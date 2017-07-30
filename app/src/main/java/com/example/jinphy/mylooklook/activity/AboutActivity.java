@@ -13,7 +13,7 @@ import com.example.jinphy.mylooklook.R;
  */
 
 
-public class AboutActivity extends BaseActivity implements View.OnClickListener{
+public class AboutActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +24,7 @@ public class AboutActivity extends BaseActivity implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-    finish();
+        finish();
 
     }
 
