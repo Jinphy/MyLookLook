@@ -17,8 +17,9 @@
 
 <com.example.jinphy.mylooklook.widget.ElasticDragDismissFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/draggable_frame"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -32,72 +33,82 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/background_light"
-        android:transitionName="@string/transition_topnew_linear"
-        android:transitionGroup="false">
+        android:transitionGroup="false"
+        android:transitionName="@string/transition_topnew_linear">
+
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <com.example.jinphy.mylooklook.widget.ParallaxScrimageView
-            android:id="@+id/shot"
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:minHeight="168dp"
-            android:foreground="@drawable/mid_grey_ripple"
-            android:stateListAnimator="@animator/app_bar_pin"
-            android:transitionName="@string/transition_topnew"
-            app:scrimColor="@color/scrim"
-            app:scrimAlpha="0"
-            app:maxScrimAlpha="0.4"
-            app:parallaxFactor="-0.5"/>
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    style="@style/Widget.Look.HomeToolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?android:actionBarSize"
+                    android:background="#3b000000"
+                    android:elevation="1dp"
+                    android:outlineProvider="none"
+                    app:title="@string/topnews"/>
+
+
+                <com.example.jinphy.mylooklook.widget.ParallaxScrimageView
+                    android:id="@+id/shot"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:foreground="@drawable/mid_grey_ripple"
+                    android:minHeight="168dp"
+                    android:scaleType="centerCrop"
+                    android:stateListAnimator="@animator/app_bar_pin"
+                    android:transitionName="@string/transition_topnew"
+                    app:maxScrimAlpha="0.4"
+                    app:parallaxFactor="-0.5"
+                    app:scrimAlpha="0"
+                    app:scrimColor="@color/scrim"/>
+
+            </LinearLayout>
+
 
             <com.example.jinphy.mylooklook.widget.TranslateYTextView
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
-                android:textSize="23sp"
-                android:textColor="@color/text_primary_light"
                 android:layout_margin="20dp"
-                app:scrimColor="@color/scrim"
                 android:stateListAnimator="@animator/app_bar_pin"
-                app:scrimAlpha="0"
+                android:textColor="@color/text_primary_light"
+                android:textSize="23sp"
                 app:maxScrimAlpha="0.4"
                 app:parallaxFactor="-0.5"
-                />
+                app:scrimAlpha="0"
+                app:scrimColor="@color/scrim"/>
         </FrameLayout>
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?android:actionBarSize"
-            android:outlineProvider="none"
-            android:elevation="1dp"
-            android:background="#3b000000"
-            style="@style/Widget.Look.HomeToolbar"
-            app:title="@string/topnews"/>
 
         <!-- We're 'faking' a toolbar here as we just want a back button.
              This approach lets the borderless ripple extend beyond the back button's bounds,
              toolbar clips it. Wrapping layout needed for the ripple. -->
         <!--<FrameLayout-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@android:color/transparent"-->
-            <!--android:elevation="@dimen/z_fab_over_touchable_app_bar">-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:background="@android:color/transparent"-->
+        <!--android:elevation="@dimen/z_fab_over_touchable_app_bar">-->
 
-            <!--&lt;!&ndash; animate alpha in DribbleShot#enterAnimation-->
-                 <!--margins push out parent for the borderless ripple &ndash;&gt;-->
-            <!--<ImageButton-->
-                <!--android:id="@+id/back"-->
-                <!--android:layout_width="?android:actionBarSize"-->
-                <!--android:layout_height="?android:actionBarSize"-->
-                <!--android:layout_marginEnd="@dimen/padding_normal"-->
-                <!--android:layout_marginBottom="@dimen/padding_normal"-->
-                <!--android:src="@drawable/ic_arrow_back"-->
-                <!--android:alpha="0"-->
-                <!--android:background="@drawable/mid_grey_ripple" />-->
+        <!--&lt;!&ndash; animate alpha in DribbleShot#enterAnimation-->
+        <!--margins push out parent for the borderless ripple &ndash;&gt;-->
+        <!--<ImageButton-->
+        <!--android:id="@+id/back"-->
+        <!--android:layout_width="?android:actionBarSize"-->
+        <!--android:layout_height="?android:actionBarSize"-->
+        <!--android:layout_marginEnd="@dimen/padding_normal"-->
+        <!--android:layout_marginBottom="@dimen/padding_normal"-->
+        <!--android:src="@drawable/ic_arrow_back"-->
+        <!--android:alpha="0"-->
+        <!--android:background="@drawable/mid_grey_ripple" />-->
         <!--</FrameLayout>-->
         <android.support.v4.widget.NestedScrollView
             android:id="@+id/nest"
@@ -108,8 +119,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="220dp"
+                android:layout_marginTop="272dp"
                 android:orientation="vertical">
+
                 <ProgressBar
                     android:id="@+id/progress"
                     style="?android:attr/progressBarStyle"
@@ -120,14 +132,16 @@
                 <org.sufficientlysecure.htmltextview.HtmlTextView
                     android:id="@+id/htNewsContent"
                     android:layout_width="match_parent"
-                    android:background="@color/nev_item"
                     android:layout_height="match_parent"
+                    android:background="@color/nev_item"
                     android:padding="12dp"
-                    android:textAppearance="@android:style/TextAppearance.Medium" />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:background="@color/background_light"/>
+                    android:layout_marginBottom="250dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+                <!--<View-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="250dp"-->
+                    <!--android:background="@color/background_light"/>-->
 
             </LinearLayout>
 

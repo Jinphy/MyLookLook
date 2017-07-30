@@ -105,7 +105,7 @@ public class GirlAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
                             String model, Target<GlideDrawable> target,
                             boolean isFromMemoryCache, boolean isFirstResource) {
                         if (!isFromMemoryCache) {
-                            new AnimUtils.Builder(holder.imageView)
+                            AnimUtils.Builder.create(holder.imageView)
                                     .setSaturation(saturationFrom, saturationTo)
                                     .setDuration(saturationDuration)
                                     .setInterpolator(new AccelerateInterpolator())

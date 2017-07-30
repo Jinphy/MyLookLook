@@ -26,6 +26,7 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.graphics.Palette;
+import android.util.Log;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -86,6 +87,11 @@ public class ColorUtils {
         return isDark(mostPopulous.getHsl()) ? IS_DARK : IS_LIGHT;
     }
 
+    /**
+     * 获取调色板中像素数量最多的样品
+     *
+     * @param palette 调色板
+     * */
     public static @Nullable Palette.Swatch getMostPopulousSwatch(Palette palette) {
         Palette.Swatch mostPopulous = null;
         if (palette != null) {
@@ -124,7 +130,8 @@ public class ColorUtils {
     }
 
     /**
-     * Check that the lightness value (0–1)
+     * hsl是一种色彩模式，h:表示色相，s:表示饱和度，l:表示明度
+     * 这个值的范围为 0 ~ 1
      */
     public static boolean isDark(float[] hsl) { // @Size(3)
         return hsl[2] < 0.5f;
@@ -174,5 +181,19 @@ public class ColorUtils {
     @IntDef({IS_LIGHT, IS_DARK, LIGHTNESS_UNKNOWN})
     public @interface Lightness {
     }
+
+
+    public static @ColorInt int changeLightNess(
+            @ColorInt int color,float faction){
+        float[] hsl =new float[3];
+        android.support.v4.graphics.ColorUtils.colorToHSL(color,hsl);
+        if (hsl[2]==0){
+            hsl[2] =0.3f;
+        }else{
+            hsl[2] *= faction;
+        }
+        return android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
+    }
+
 
 }

@@ -100,8 +100,9 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
                                 clearAnimatedValues(holder.itemView);
                             }
                         })
-                        .setInterpolator(AnimUtils.getLinearOutSlowInInterpolator(
-                                holder.itemView.getContext()));
+                        .setInterpolator(
+                                AnimUtils.getInterpolator(holder.itemView.getContext(),
+                                AnimUtils.TYPE_FAST_OUT_SLOW_IN));
                 pendingAdds.remove(i);
             }
         }

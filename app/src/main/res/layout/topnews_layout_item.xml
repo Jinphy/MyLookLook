@@ -1,60 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/zhihu_item_layout"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:foreground="@drawable/mid_grey_ripple"
-              android:orientation="horizontal"
-              android:paddingBottom="@dimen/item_margin"
-              android:paddingTop="@dimen/item_margin"
-              android:stateListAnimator="@animator/raise">
-
-    <com.example.jinphy.mylooklook.widget.BadgedFourThreeImageView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/item_image_id"
-        android:layout_width="@dimen/image_width"
-        android:layout_height="@dimen/image_height"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="@dimen/image_left_margin"
-        android:layout_marginTop="5dp"
-        android:padding="@dimen/item_padding"
-        android:elevation="@dimen/z_card"
-        android:foreground="@drawable/mid_grey_ripple"
-        android:stateListAnimator="@animator/raise"
-        app:badgeGravity="end|bottom"
-        app:badgePadding="@dimen/padding_normal"/>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="@drawable/mid_grey_ripple"
+    android:layout_marginLeft="@dimen/item_margin_edge"
+    android:layout_marginRight="@dimen/item_margin_edge"
+    app:cardCornerRadius="3dp"
+    app:cardUseCompatPadding="true"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/cardview_light_background">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/item_margin"
+        android:stateListAnimator="@animator/raise">
 
-        <TextView
-            android:id="@+id/item_text_id"
+
+        <com.example.jinphy.mylooklook.widget.BadgedFourThreeImageView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/item_image_id"
+            android:layout_width="@dimen/image_width"
+            android:layout_height="@dimen/image_height"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="@dimen/image_left_margin"
+            android:layout_marginTop="5dp"
+            android:scaleType="centerCrop"
+            android:elevation="@dimen/z_card"
+            android:foreground="@drawable/mid_grey_ripple"
+            android:padding="@dimen/item_padding"
+            android:stateListAnimator="@animator/raise"
+            app:badgeGravity="end|bottom"
+            app:badgePadding="@dimen/padding_normal"/>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_weight="1"
-            android:stateListAnimator="@animator/raise"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/text_size"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/item_text_source_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:layout_marginBottom="7dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="20dp"
-            android:stateListAnimator="@animator/raise"
-            android:text="helooeddd"
-            android:textColor="@color/text_source"
-            android:textSize="10sp"/>
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:stateListAnimator="@animator/raise"
+                android:textColor="@color/text_color"
+                android:textSize="@dimen/text_size"/>
+
+            <TextView
+                android:id="@+id/source"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_marginBottom="7dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="20dp"
+                android:stateListAnimator="@animator/raise"
+                android:text="helooeddd"
+                android:textColor="@color/text_source"
+                android:textSize="10sp"/>
+        </LinearLayout>
+
     </LinearLayout>
 
 
-</LinearLayout>
+</android.support.v7.widget.CardView>

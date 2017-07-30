@@ -4,37 +4,56 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.transition.Transition;
-import android.util.TypedValue;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.example.jinphy.mylooklook.MyApplication;
 import com.example.jinphy.mylooklook.R;
+import com.example.jinphy.mylooklook.adapter.TopNewsAdapter;
+import com.example.jinphy.mylooklook.adapter.listener.GlideRequestListenerAdapter;
 import com.example.jinphy.mylooklook.adapter.listener.TransitionListenerAdapter;
+import com.example.jinphy.mylooklook.bean.news.NewsBean;
 import com.example.jinphy.mylooklook.bean.news.NewsDetailBean;
 import com.example.jinphy.mylooklook.presenter.implPresenter.TopNewsDesPresenterImpl;
 import com.example.jinphy.mylooklook.presenter.implView.ITopNewsDesFragment;
 import com.example.jinphy.mylooklook.util.AnimUtils;
 import com.example.jinphy.mylooklook.util.ColorUtils;
+import com.example.jinphy.mylooklook.util.FileUtils;
 import com.example.jinphy.mylooklook.util.GlideUtils;
+import com.example.jinphy.mylooklook.util.Help;
+import com.example.jinphy.mylooklook.util.MathUtils;
 import com.example.jinphy.mylooklook.util.ScreenUtils;
 import com.example.jinphy.mylooklook.util.ViewUtils;
 import com.example.jinphy.mylooklook.widget.ElasticDragDismissFrameLayout;
@@ -42,6 +61,8 @@ import com.example.jinphy.mylooklook.widget.ParallaxScrimageView;
 import com.example.jinphy.mylooklook.widget.TranslateYTextView;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -51,10 +72,14 @@ import butterknife.OnClick;
  * Created by xinghongfei on 16/8/13.
  */
 public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDesFragment {
-    private static final float SCRIM_ADJUSTMENT = 0.075f;
-    int[] mDeviceInfo;
-    int width;
-    int heigh;
+    public static final String ID = "ID";
+    public static final String TITLE = "TITLE";
+    int screenWidth = ScreenUtils.getScreenWidth(MyApplication.getContext());
+    int screenHeight = ScreenUtils.getScreenHeight(MyApplication.getContext());
+    float density = ScreenUtils.getDensity(MyApplication.getContext());
+
+    float width = screenWidth;
+    float height = width *3 /4;
     @BindView(R.id.progress)
     ProgressBar mProgress;
     @BindView(R.id.htNewsContent)
@@ -72,102 +97,10 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
 
     private String id;
     private String title;
-    private String mImageUrl;
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
     private TopNewsDesPresenterImpl mTopNewsDesPresenter;
-    private NestedScrollView.OnScrollChangeListener scrollListener;
     private Transition.TransitionListener mReturnHomeListener;
     private Transition.TransitionListener mEnterTrasitionListener;
-    private RequestListener glideLoadListener = new RequestListener<String, GlideDrawable>() {
-        @Override
-        public boolean onResourceReady(GlideDrawable resource, String model,
-                                       Target<GlideDrawable> target, boolean isFromMemoryCache,
-                                       boolean isFirstResource) {
-            final Bitmap bitmap = GlideUtils.getBitmap(resource);
-            final int twentyFourDip = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    24, TopNewsDescribeActivity.this.getResources().getDisplayMetrics());
-            Palette.from(bitmap)
-                    .maximumColorCount(3)
-                    .clearFilters() /* by default palette ignore certain hues
-                        (e.g. pure black/white) but we don't want this. */
-                    .setRegion(0, 0, bitmap.getWidth() - 1, twentyFourDip) /* - 1 to work around
-                        https://code.google.com/p/android/issues/detail?id=191013 */
-                    .generate(new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-                            boolean isDark;
-                            @ColorUtils.Lightness int lightness = ColorUtils.isDark(palette);
-                            if (lightness == ColorUtils.LIGHTNESS_UNKNOWN) {
-                                isDark = ColorUtils.isDark(bitmap, bitmap.getWidth() / 2, 0);
-                            } else {
-                                isDark = lightness == ColorUtils.IS_DARK;
-                            }
-                            // color the status bar. Set a complementary dark color on L,
-                            // light or dark color on M (with matching status bar icons)
-                            int statusBarColor = getWindow().getStatusBarColor();
-                            final Palette.Swatch topColor =
-                                    ColorUtils.getMostPopulousSwatch(palette);
-                            if (topColor != null &&
-                                    (isDark || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)) {
-                                statusBarColor = ColorUtils.scrimify(topColor.getRgb(),
-                                        isDark, SCRIM_ADJUSTMENT);
-                                // set a light status bar on M+
-                                if (!isDark && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                    ViewUtils.setLightStatusBar(mShot);
-                                }
-                            }
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-                                if (statusBarColor != getWindow().getStatusBarColor()) {
-                                    mShot.setScrimColor(statusBarColor);
-                                    ValueAnimator statusBarColorAnim = ValueAnimator.ofArgb(
-                                            getWindow().getStatusBarColor(), statusBarColor);
-                                    statusBarColorAnim.addUpdateListener(new ValueAnimator
-                                            .AnimatorUpdateListener() {
-                                        @Override
-                                        public void onAnimationUpdate(ValueAnimator animation) {
-                                            getWindow().setStatusBarColor(
-                                                    (int) animation.getAnimatedValue());
-                                        }
-                                    });
-                                    statusBarColorAnim.setDuration(1000L);
-                                    statusBarColorAnim.setInterpolator(
-                                            new AccelerateInterpolator());
-                                    statusBarColorAnim.start();
-                                }
-                            }
-                        }
-                    });
-
-            Palette.from(bitmap)
-                    .clearFilters()
-                    .generate(new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-
-                            // slightly more opaque ripple on the pinned image to compensate
-                            // for the scrim
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                mShot.setForeground(ViewUtils.createRipple(palette, 0.3f, 0.6f,
-                                        ContextCompat.getColor(TopNewsDescribeActivity.this, R.color.mid_grey),
-                                        true));
-                            }
-
-                        }
-                    });
-
-            // TODO should keep the background if the image contains transparency?!
-            mShot.setBackground(null);
-            return false;
-        }
-
-        @Override
-        public boolean onException(Exception e, String model, Target<GlideDrawable> target,
-                                   boolean isFirstResource) {
-            return false;
-        }
-    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -175,9 +108,6 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
         setContentView(R.layout.topnews_describe);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
-        mDeviceInfo = ScreenUtils.getDeviceInfo(this);
-        width = mDeviceInfo[0];
-        heigh = width * 3 / 4;
         initData();
         initView();
         getData();
@@ -191,87 +121,71 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
 
     }
 
+
+
     protected void initData() {
-        id = getIntent().getStringExtra("docid");
-        title = getIntent().getStringExtra("title");
+        id = getIntent().getStringExtra(ID);
+        title = getIntent().getStringExtra(TITLE);
         mTextView.setText(title);
-        mImageUrl = getIntent().getStringExtra("image");
-        scrollListener = new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (oldScrollY < 168) {
-                    mShot.setOffset(-oldScrollY);
-                    mTextView.setOffset(-oldScrollY);
-                }
-            }
-        };
-        Glide.with(this)
-                .load(mImageUrl)
-                .override(width, heigh)
-                .listener(glideLoadListener)
-                .centerCrop()
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .into(mShot);
+
+        Bitmap bitmap = TopNewsAdapter.getSelectedBitmap();
+        mShot.setImageBitmap(bitmap);
+
+        Palette.Swatch swatch = Palette.from(bitmap).generate().getDarkVibrantSwatch();
+        int statusColor = ColorUtils.changeLightNess(Color.BLACK,0);
+        int toolbarColor = ColorUtils.changeLightNess(statusColor,1.3f);
+        if (swatch!=null){
+            statusColor = swatch.getRgb();
+            toolbarColor = ColorUtils.changeLightNess(statusColor,1.3f);
+        }
+        ScreenUtils.setStatusBarColor(this,statusColor);
+        mToolbar.setBackgroundColor(toolbarColor);
 
 
         mTopNewsDesPresenter = new TopNewsDesPresenterImpl(this);
-        mNest.setOnScrollChangeListener(scrollListener);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             postponeEnterTransition();
-            mShot.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            mShot.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver
+                    .OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
                     mShot.getViewTreeObserver().removeOnPreDrawListener(this);
-                    startPostponedEnterTransition();
+                    TopNewsDescribeActivity.this.startPostponedEnterTransition();
                     return true;
                 }
             });
         }
-        mReturnHomeListener =
-                new TransitionListenerAdapter() {
+        mReturnHomeListener = new TransitionListenerAdapter() {
                     @Override
                     public void onTransitionStart(Transition transition) {
                         super.onTransitionStart(transition);
-                        // hide the fab as for some reason it jumps position??  TODO work out why
-                        mToolbar.animate()
-                                .alpha(0f)
+                        AnimUtils.Builder.create()
+                                .setFloat(1f,0f)
                                 .setDuration(100)
-                                .setInterpolator(new AccelerateInterpolator());
+                                .setInterpolator(new AccelerateInterpolator())
+                                .onUpdateFloat(animator -> setAlpha(animator,mToolbar,mTextView,mNest))
+                                .animate();
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             mShot.setElevation(1f);
                             mToolbar.setElevation(0f);
                         }
-                        mNest.animate()
-                                .alpha(0f)
-                                .setDuration(50)
-                                .setInterpolator(new AccelerateInterpolator());
                     }
                 };
-        mEnterTrasitionListener =
-                new TransitionListenerAdapter() {
+        mEnterTrasitionListener = new TransitionListenerAdapter() {
                     @Override
                     public void onTransitionEnd(Transition transition) {
                         super.onTransitionEnd(transition);
-//                    解决5.0 shara element bug
-                        ValueAnimator valueAnimator = ValueAnimator.ofInt(0, 100).setDuration(100);
-                        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                            @Override
-                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-//                            mShot.setOffset((Integer) valueAnimator.getAnimatedValue() * 10);
-                                mNest.smoothScrollTo((Integer) valueAnimator.getAnimatedValue() / 10, 0);
+                        //                    解决5.0 shara element bug
 
-                            }
-                        });
-                        valueAnimator.start();
-//                    mShot.setAlpha(0.5f);
-//                    mShot.animate().alpha(1f).setDuration(800L).start();
-                    }
-
-                    @Override
-                    public void onTransitionResume(Transition transition) {
-                        super.onTransitionResume(transition);
+                        AnimUtils.Builder.create()
+                                .setInt(0,100)
+                                .setDuration(100)
+                                .onUpdateInt(animator ->
+                                        mNest.smoothScrollTo((int) animator.getAnimatedValue()/10,0))
+                                .animate();
 
                     }
+
                 };
 
 
@@ -280,18 +194,8 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
     private void initView() {
         mNest.setAlpha(0.5f);
         mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        mToolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mNest.smoothScrollTo(0, 0);
-            }
-        });
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                expandImageAndFinish();
-            }
-        });
+        mToolbar.setOnClickListener(view -> mNest.smoothScrollTo(0, 0));
+        mToolbar.setNavigationOnClickListener(v -> expandImageAndFinish());
     }
 
     @Override
@@ -345,84 +249,87 @@ public class TopNewsDescribeActivity extends BaseActivity implements ITopNewsDes
 
     @Override
     public void hidProgressDialog() {
-        mProgress.setVisibility(View.INVISIBLE);
+        mProgress.setVisibility(View.GONE);
 
     }
 
     @Override
     public void showError(String error) {
-        Snackbar.make(mDraggableFrame, getString(R.string.snack_infor), Snackbar.LENGTH_INDEFINITE).setAction("重试", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getData();
-            }
-        }).show();
+        Snackbar.make(mDraggableFrame, getString(R.string.snack_infor), Snackbar
+                .LENGTH_INDEFINITE).setAction("重试", v -> getData()).show();
     }
 
     private void expandImageAndFinish() {
 
         if (mShot.getOffset() != 0f) {
-            Animator expandImage = ObjectAnimator.ofFloat(mShot, ParallaxScrimageView.OFFSET,
-                    0f);
-            expandImage.setDuration(80);
-            expandImage.setInterpolator(new AccelerateInterpolator());
-            expandImage.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        finishAfterTransition();
-                    } else {
-                        finish();
-                    }
-                }
-            });
-            expandImage.start();
+            AnimUtils.Builder.create()
+                    .setFloat(0f)
+                    .setDuration(80)
+                    .setInterpolator(new AccelerateInterpolator())
+                    .onUpdateFloat(animator -> mShot.setOffset((float)animator.getAnimatedValue()))
+                    .onEnd(this::finish)
+                    .animate();
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                finishAfterTransition();
-            } else {
-                finish();
-            }
+            finish(null);
         }
 
 
     }
 
+    private void finish(Animator animator) {
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+            finishAfterTransition();
+        } else {
+            finish();
+        }
+    }
+
     private void enterAnimation() {
-        float offSet = mToolbar.getHeight();
-        LinearInterpolator interpolator = new LinearInterpolator();
-        AccelerateInterpolator accelerateInterpolator = new AccelerateInterpolator();
-        viewEnterAnimation(mToolbar, offSet, interpolator);
-        viewEnterAnimationNest(mNest, 0f, accelerateInterpolator);
 
+        AnimUtils.Builder.create(mToolbar)
+                .setTranY(-200*density,0)
+                .setFloat(0f,1f)
+                .onUpdateFloat(animator -> setAlpha(animator,mToolbar,mNest))
+                .setDuration(400)
+                .setInterpolator(new LinearInterpolator())
+                .animate();
     }
 
-    private void viewEnterAnimation(View view, float offset, Interpolator interp) {
-        view.setTranslationY(-offset);
-        view.setAlpha(0.6f);
-        view.animate()
-                .translationY(0f)
-                .alpha(1f)
-                .setDuration(600L)
-                .setInterpolator(interp)
-                .setListener(null)
-                .start();
-    }
 
-    private void viewEnterAnimationNest(View view, float offset, Interpolator interp) {
-        view.setTranslationY(-offset);
-        view.animate()
-                .translationY(0f)
-                .alpha(1f)
-                .setDuration(50L)
-                .setInterpolator(interp)
-                .setListener(null)
-                .start();
+    private void setAlpha(ValueAnimator animator, View... views) {
+        float alpha = (float) animator.getAnimatedValue();
+        for (View view : views) {
+            view.setAlpha(alpha);
+        }
     }
 
     @Override
     public void updateListItem(NewsDetailBean newsList) {
-        mProgress.setVisibility(View.INVISIBLE);
-        mHtNewsContent.setHtmlFromString(newsList.getBody(), new HtmlTextView.LocalImageGetter());
+        mProgress.setVisibility(View.GONE);
+        mHtNewsContent.setHtmlFromString(newsList==null?"数据获取失败":newsList.getBody(), new HtmlTextView.LocalImageGetter());
+    }
+
+    public static void startActivity(
+            Activity activity,
+            NewsBean item,
+            View itemView,
+            ImageView photoView) {
+
+        Intent intent = new Intent(activity, TopNewsDescribeActivity.class);
+        intent.putExtra(ID, item.getDocid());
+        intent.putExtra(TITLE, item.getTitle());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final Pair<View, String>[] pairs = Help.createSafeTransitionParticipants(
+                    activity,
+                    false,
+                    new Pair<>(photoView, activity.getString(R.string.transition_topnew)),
+                    new Pair<>(itemView, activity.getString(R.string.transition_topnew_linear)));
+            ActivityOptionsCompat options =
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(activity, pairs);
+            activity.startActivity(intent, options.toBundle());
+        } else {
+            activity.startActivity(intent);
+
+        }
     }
 }

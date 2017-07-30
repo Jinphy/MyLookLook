@@ -58,21 +58,16 @@ public class TopNewsFragment extends BaseFragment implements ITopNewsFragment {
 
         loadingMoreListener = new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                if (dy > 0) //向下滚动
-                {
+                if (dy > 0) {
+                    //向下滚动
                     int visibleItemCount = mLinearLayoutManager.getChildCount();
                     int totalItemCount = mLinearLayoutManager.getItemCount();
-                    int pastVisiblesItems = mLinearLayoutManager.findFirstVisibleItemPosition();
+                    int firstVisible = mLinearLayoutManager.findFirstVisibleItemPosition();
 
-                    if (!isLoading && (visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                    if (!isLoading && (visibleItemCount + firstVisible) >= totalItemCount) {
                         isLoading = true;
                         loadMoreDate();
                     }
@@ -83,7 +78,7 @@ public class TopNewsFragment extends BaseFragment implements ITopNewsFragment {
         mLinearLayoutManager = new WrapContentLinearLayoutManager(getContext());
         recycle.setLayoutManager(mLinearLayoutManager);
         recycle.setHasFixedSize(true);
-        recycle.addItemDecoration(new GridItemDividerDecoration(getContext(), R.dimen.divider_height, R.color.divider));
+//        recycle.addItemDecoration(new GridItemDividerDecoration(getContext(), R.dimen.divider_height, R.color.divider));
         // TODO: 16/8/13 add  animation
         recycle.setItemAnimator(new DefaultItemAnimator());
         recycle.setAdapter(mTopNewsAdapter);
@@ -129,12 +124,9 @@ public class TopNewsFragment extends BaseFragment implements ITopNewsFragment {
     @Override
     public void showError(String error) {
         if (recycle != null) {
-            Snackbar.make(recycle, getString(R.string.snack_infor), Snackbar.LENGTH_SHORT).setAction("重试", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mTopNewsPrensenter.getNewsList(currentIndex);
-                }
-            }).show();
+            Snackbar.make(recycle, getString(R.string.snack_infor), Snackbar.LENGTH_SHORT)
+                    .setAction("重试", v -> mTopNewsPrensenter.getNewsList(currentIndex))
+                    .show();
 
         }
     }
@@ -143,5 +135,11 @@ public class TopNewsFragment extends BaseFragment implements ITopNewsFragment {
     public void onDestroyView() {
         super.onDestroyView();
         mTopNewsPrensenter.unsubscrible();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        TopNewsAdapter.removeSelectedBitmap();
     }
 }

@@ -62,12 +62,11 @@ public class NewsJsonUtils {
             JsonParser parser = new JsonParser();
             JsonObject jsonObj = parser.parse(res).getAsJsonObject();
             JsonElement jsonElement = jsonObj.get(docId);
-            if(jsonElement == null) {
-                return null;
+            if(jsonElement != null) {
+                newsDetailBean = JsonUtils.deserialize(jsonElement.getAsJsonObject(), NewsDetailBean.class);
             }
-            newsDetailBean = JsonUtils.deserialize(jsonElement.getAsJsonObject(), NewsDetailBean.class);
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
+
         return newsDetailBean;
     }
 

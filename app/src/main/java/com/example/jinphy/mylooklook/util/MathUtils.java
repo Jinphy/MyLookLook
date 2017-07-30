@@ -23,7 +23,11 @@ public class MathUtils {
 
     private MathUtils() { }
 
-    public static float constrain(float min, float max, float v) {
-        return Math.max(min, Math.min(max, v));
+    public static float constrain(float min, float max, float value) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    public static int constrain(int min, float max, float value) {
+        return (int) Math.max(min, Math.min(max, value));
     }
 }

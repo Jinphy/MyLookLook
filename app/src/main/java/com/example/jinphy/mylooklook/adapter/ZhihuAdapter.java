@@ -126,7 +126,7 @@ public class ZhihuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             Target<GlideDrawable> target,
                             boolean isFromMemoryCache, boolean isFirstResource) {
                         if (!isFromMemoryCache) {
-                            new AnimUtils.Builder(holder.imageView)
+                            AnimUtils.Builder.create(holder.imageView)
                                     .setSaturation(saturationFrom, saturationTo)
                                     .setDuration(saturationDuration)
                                     .setInterpolator(new AccelerateInterpolator())

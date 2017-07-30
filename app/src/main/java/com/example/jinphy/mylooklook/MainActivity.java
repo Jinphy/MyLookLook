@@ -282,7 +282,8 @@ public class MainActivity extends BaseActivity implements IMain {
                     .scaleX(1f)
                     .setStartDelay(500)
                     .setDuration(900)
-                    .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(this)).start();
+                    .setInterpolator(AnimUtils.getInterpolator(this,AnimUtils.TYPE_FAST_OUT_SLOW_IN))
+                    .start();
         }
     }
 

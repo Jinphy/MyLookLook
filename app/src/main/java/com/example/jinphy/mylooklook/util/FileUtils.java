@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.example.jinphy.mylooklook.exception.ConditionException;

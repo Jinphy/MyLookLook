@@ -246,7 +246,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                     .scaleX(1f)
                     .scaleY(1f).alpha(1f)
                     .setDuration(200L)
-                    .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(getContext()))
+                    .setInterpolator(AnimUtils.getInterpolator(getContext(),AnimUtils.TYPE_FAST_OUT_SLOW_IN))
                     .setListener(null)
                     .start();
             totalDrag = 0;
