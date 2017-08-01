@@ -158,6 +158,16 @@ public class AnimUtils {
 
     }
 
+
+    public static Builder just(View view) {
+        return Builder.create(view);
+    }
+
+    public static Builder just() {
+        return Builder.create();
+    }
+
+
     /**
      * 动画创建器类，构造者模式
      * 用来辅助创建动画
@@ -238,6 +248,7 @@ public class AnimUtils {
          *
          * @param target 执行动画的目标视图
          * @return 动画构造器
+         * @deprecated use {@code AnimUtils.just(View) } directly
          * */
         public static Builder create(@NonNull View target){
             return new Builder(target);
@@ -267,6 +278,7 @@ public class AnimUtils {
          * @see AnimUtils.Builder#setFloat(float...)
          * @see AnimUtils.Builder#setColor(int...)
          * @return 动画构造器
+         * @deprecated use {@code AnimUtils.just() } directly
          * */
         public static Builder create() {
             return new Builder();
